@@ -10,6 +10,9 @@ An endless, GamePigeon-style Word Hunt that runs in any browser and is meant to 
 - **Startup bug fixed (Oct 23).** The "Play specific letters" box showed on load and swallowed typing. Pop-ups now stay hidden until opened, and typing in a textbox goes into the textbox.
 - **Published.** Repo: https://github.com/elmopaciencia-tech/word-hunt (public, branch `main`). Live: https://elmopaciencia-tech.github.io/word-hunt/ via GitHub Pages. `index.html` includes the ENABLE dictionary and Telegram's Mini App script.
 
+- **Redesign (Oct 23).** White, Duolingo-style look; tiles turn blue/green/yellow while dragging (no red until release); chime/beep sounds; Sound and Vibration switches; clearer end-screen word lists; bigger score/time.
+- **Challenge links (Oct 23).** Every board has a short code that produces the same letters on every device. After a round, "Challenge a friend" shares a link with the board, timer and your score. Whoever opens it sees a face-down board, presses Start, gets a 3-2-1 countdown, then a You-vs-them result and can send their score back. Works in groups (everyone gets the same board). No server: scores travel inside the link, so they're on the honour system.
+
 ## Left to do
 
 | # | Task | Who | Notes |
@@ -18,6 +21,7 @@ An endless, GamePigeon-style Word Hunt that runs in any browser and is meant to 
 | 2 | Create the Telegram bot | **You** | In @BotFather send `/newbot`. Keep the token private; this setup doesn't use it. |
 | 3 | Attach the game as a Mini App | You | In @BotFather send `/newapp`, choose the bot, and paste the live URL. You get a link like `t.me/<yourbot>/wordhunt`. |
 | 4 | Optional: add a Play button in the bot chat | You | `/setmenubutton`, then paste the same URL. |
+| 5 | Point challenge links at the Mini App | Claude | Once you have the `t.me/<bot>/<app>` link, Claude sets `TG_APP` in `index.html` so shared challenges open inside Telegram instead of the browser. |
 
 Tasks 2–4 are yours because creating the bot makes a new Telegram account and issues a secret token, which Claude shouldn't create or handle.
 
@@ -31,7 +35,8 @@ Tasks 2–4 are yours because creating the bot makes a new Telegram account and 
 ## Ideas for later
 
 - Swap in a word list closer to GamePigeon's, or let players report "GamePigeon rejected this"
-- Daily seeded board so friends can compare on the same letters
+- Daily board (easy now: use the date as the board code)
+- Live rooms with a lobby and synced start (needs a small server, e.g. Supabase)
 - Telegram leaderboards (needs a hosted bot)
 - Shrink the page by gzipping the dictionary (about 1.7 MB down to roughly 500 KB)
 
