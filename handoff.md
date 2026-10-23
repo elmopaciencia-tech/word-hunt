@@ -13,6 +13,8 @@ An endless, GamePigeon-style Word Hunt that runs in any browser and is meant to 
 - **Redesign (Oct 23).** White, Duolingo-style look; tiles turn blue/green/yellow while dragging (no red until release); chime/beep sounds; Sound and Vibration switches; clearer end-screen word lists; bigger score/time.
 - **Challenge links (Oct 23).** Every board has a short code that produces the same letters on every device. After a round, "Challenge a friend" shares a link with the board, timer and your score. Whoever opens it sees a face-down board, presses Start, gets a 3-2-1 countdown, then a You-vs-them result and can send their score back. Works in groups (everyone gets the same board). No server: scores travel inside the link, so they're on the honour system.
 
+- **Main menu (Oct 23).** Opens to a menu: Play, Challenge friends (play, then the share box opens), Daily board (same 4×4 · 80 s board for everyone each day, by local date), Play specific letters, plus settings (board size, time, sound, vibration) and your best score. The game screen has a home button; inside Telegram the top-left Back button also returns to the menu.
+
 ## Left to do
 
 | # | Task | Who | Notes |
@@ -35,7 +37,6 @@ Tasks 2–4 are yours because creating the bot makes a new Telegram account and 
 ## Ideas for later
 
 - Swap in a word list closer to GamePigeon's, or let players report "GamePigeon rejected this"
-- Daily board (easy now: use the date as the board code)
 - Live rooms with a lobby and synced start (needs a small server, e.g. Supabase)
 - Telegram leaderboards (needs a hosted bot)
 - Shrink the page by gzipping the dictionary (about 1.7 MB down to roughly 500 KB)
