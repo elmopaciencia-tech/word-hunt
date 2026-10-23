@@ -231,7 +231,12 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 .meter i::after { content: ""; position: absolute; left: 8px; right: 8px; top: 4px; height: 4px; border-radius: 99px; background: rgba(255,255,255,.35); }
 .note { margin: 0; color: var(--muted); font-size: 15px; font-weight: 700; }
 
-.review { display: grid; grid-template-columns: minmax(120px, 170px) 1fr; gap: 14px; align-items: center; }
+.review {
+  display: grid; grid-template-columns: minmax(120px, 170px) 1fr; gap: 14px; align-items: center;
+  /* Stays pinned while the word list scrolls underneath, so tapping a word shows its path in view */
+  position: sticky; top: -22px; z-index: 3;
+  margin: 0 -18px; padding: 10px 18px; background: var(--bg); box-shadow: 0 2px 0 var(--line);
+}
 .review .board { width: 100%; border-radius: 16px; border-bottom-width: 4px; }
 .review .board .tile { border-radius: 16%; border-width: 1.5px; }
 .review .board .tile.on { transform: none; }
@@ -260,7 +265,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 .chip.found { background: var(--green-soft); border-color: var(--green-line); color: var(--green-edge); }
 .chip.found::before { content: "✓ "; font-weight: 900; }
 .chip[aria-pressed="true"] { border-color: var(--blue); background: var(--blue-soft); color: var(--blue-edge); }
-.sheet-actions { display: flex; gap: 10px; position: sticky; bottom: 0; padding-top: 10px; background: var(--bg); box-shadow: 0 -2px 0 var(--line); }
+.sheet-actions { display: flex; gap: 10px; position: sticky; bottom: 0; padding-top: 10px; background: var(--bg); box-shadow: 0 -2px 0 var(--line), 0 24px 0 var(--bg); /* second shadow hides the list under the card's bottom padding */ }
 
 .sheet input {
   box-sizing: border-box; width: 100%;
