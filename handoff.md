@@ -6,28 +6,20 @@ An endless, GamePigeon-style Word Hunt that runs in any browser and is meant to 
 
 ## Done
 
-- **Game built and playable**, as a private Claude artifact ("Word Hunt Unlimited").
-  - Swipe input with live green/yellow feedback, plus keyboard typing on desktop
-  - 80 s, 2 min, and untimed Zen rounds on 4×4 or 5×5 boards
-  - End-of-round screen lists every possible word and draws the path for any word you tap
-  - "Play specific letters" loads any board, such as one copied from GamePigeon
-  - Best score saved per board size and round length, in the browser
-- **Standalone `index.html` prepared** for GitHub Pages. It has the ENABLE dictionary embedded (about 1.7 MB, 172k words) and Telegram's Mini App script added (full-screen, haptics, no swipe-to-close).
-- **Local git repo committed** with `index.html`, `README.md` and `.nojekyll` (commit `a128266`, branch `main`). It hasn't been pushed yet.
+- **Game built and playable.** Swipe or type to find words; 80 s, 2 min and Zen rounds on 4×4 or 5×5; end-of-round word list with paths; "Play specific letters"; best scores saved per device.
+- **Startup bug fixed (Oct 23).** The "Play specific letters" box showed on load and swallowed typing. Pop-ups now stay hidden until opened, and typing in a textbox goes into the textbox.
+- **Published.** Repo: https://github.com/elmopaciencia-tech/word-hunt (public, branch `main`). Live: https://elmopaciencia-tech.github.io/word-hunt/ via GitHub Pages. `index.html` includes the ENABLE dictionary and Telegram's Mini App script.
 
 ## Left to do
 
 | # | Task | Who | Notes |
 |---|------|-----|-------|
-| 1 | Create an empty public repo `elmopaciencia-tech/word-hunt` | **You** | Go to [github.com/new](https://github.com/new). Leave README, .gitignore and license unticked. Claude was blocked from creating public repos. |
-| 2 | Push the committed game to the new repo | Claude | Say "repo's created" and Claude attaches it and pushes. |
-| 3 | Turn on GitHub Pages | **You** (if Claude is blocked) | Settings → Pages → Deploy from a branch → `main` / root → Save. Live in about a minute at `https://elmopaciencia-tech.github.io/word-hunt/`. |
-| 4 | Check the live page on your phone | You | Open the Pages URL and play a round. |
-| 5 | Create the Telegram bot | **You** | In @BotFather send `/newbot`. Keep the token private; this setup doesn't use it. |
-| 6 | Attach the game as a Mini App | You | In @BotFather send `/newapp`, choose the bot, and paste the Pages URL. You get a link like `t.me/<yourbot>/wordhunt`. |
-| 7 | Optional: add a Play button in the bot chat | You | `/setmenubutton`, then paste the same URL. |
+| 1 | Check the live page on your phone | You | Open the live URL and play a round. |
+| 2 | Create the Telegram bot | **You** | In @BotFather send `/newbot`. Keep the token private; this setup doesn't use it. |
+| 3 | Attach the game as a Mini App | You | In @BotFather send `/newapp`, choose the bot, and paste the live URL. You get a link like `t.me/<yourbot>/wordhunt`. |
+| 4 | Optional: add a Play button in the bot chat | You | `/setmenubutton`, then paste the same URL. |
 
-Tasks 5–7 are yours because creating the bot makes a new Telegram account and issues a secret token, which Claude shouldn't create or handle.
+Tasks 2–4 are yours because creating the bot makes a new Telegram account and issues a secret token, which Claude shouldn't create or handle.
 
 ## Known gaps
 
@@ -45,7 +37,7 @@ Tasks 5–7 are yours because creating the bot makes a new Telegram account and 
 
 ## Where things are
 
-- **Repo (local, not yet pushed):** `/home/claude/word-hunt` in Claude's workspace
-- **Planned GitHub repo:** `elmopaciencia-tech/word-hunt`
-- **Planned live URL:** `https://elmopaciencia-tech.github.io/word-hunt/`
+- **Local folder:** `/Users/elmo/Desktop/AI/apps/word-hunt` (git repo, tracks `origin/main`)
+- **GitHub repo:** https://github.com/elmopaciencia-tech/word-hunt
+- **Live URL:** https://elmopaciencia-tech.github.io/word-hunt/
 - **Dictionary source:** ENABLE word list ([dolph/dictionary](https://github.com/dolph/dictionary))
