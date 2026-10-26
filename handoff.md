@@ -17,6 +17,8 @@ An endless, GamePigeon-style Word Hunt that runs in any browser and is meant to 
 
 - **Game feel (Oct 26).** The page no longer scrolls or zooms (only the menu and pop-up sheets scroll), so swipes don't get hijacked. Every round starts face-down with a 3-2-1 countdown, then the tiles flip over and the clock starts. Mid-round the only button is End round; Home and New board appear once the round is over. Added animations: menu entrance, tile flip, score bump, timer pulse in the last 10 s, results sheet slide-up with count-up and meter fill.
 
+- **Saved boards, replay timers, home screen (Oct 27).** Results sheet: buttons now sit flush at the bottom (no word list peeking under them on iPhone). Replay asks for 80 s / 2 min / Zen and shows your best on that board for each. Star a board to save it (localStorage `wh-saved`); saved boards keep a best score per timer and open from "Saved boards" on the menu. iOS-only menu card explains Add to Home Screen for Safari and Chrome (hidden once installed, in Telegram, or after "Don't show again"). Favicon, apple-touch-icon and `manifest.webmanifest` added; icon made with GPT image gen via OpenCode (`icon-source.png`).
+
 ## Left to do
 
 | # | Task | Who | Notes |

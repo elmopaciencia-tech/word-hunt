@@ -3,6 +3,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Word Hunt Unlimited</title>
 <meta name="theme-color" content="#ffffff">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Word Hunt">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -214,7 +222,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
   background: var(--bg);
   border-radius: 24px 24px 0 0;
   padding-top: 22px;
-  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 0; /* the sticky .sheet-actions carries the bottom padding so nothing scrolls under it */
   padding-left: max(18px, env(safe-area-inset-left, 0px));
   padding-right: max(18px, env(safe-area-inset-right, 0px));
   display: flex; flex-direction: column; gap: 16px;
@@ -271,7 +279,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 .chip.found { background: var(--green-soft); border-color: var(--green-line); color: var(--green-edge); }
 .chip.found::before { content: "✓ "; font-weight: 900; }
 .chip[aria-pressed="true"] { border-color: var(--blue); background: var(--blue-soft); color: var(--blue-edge); }
-.sheet-actions { display: flex; gap: 10px; position: sticky; bottom: 0; padding-top: 10px; background: var(--bg); box-shadow: 0 -2px 0 var(--line), 0 24px 0 var(--bg); /* second shadow hides the list under the card's bottom padding */ }
+.sheet-actions { display: flex; gap: 10px; position: sticky; bottom: 0; z-index: 4; padding-top: 10px; padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)); background: var(--bg); box-shadow: 0 -2px 0 var(--line); }
 
 .sheet input {
   box-sizing: border-box; width: 100%;
@@ -364,6 +372,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 #menu:not([hidden]) .menu-actions > :nth-child(2) { animation-delay: .45s; }
 #menu:not([hidden]) .menu-actions > :nth-child(3) { animation-delay: .5s; }
 #menu:not([hidden]) .menu-actions > :nth-child(4) { animation-delay: .55s; }
+#menu:not([hidden]) .menu-actions > :nth-child(n+5) { animation-delay: .58s; }
 #menu:not([hidden]) .settings { animation-delay: .6s; }
 
 /* Game controls ease in when they appear */
@@ -408,6 +417,41 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 .group { animation: fadeUp .4s var(--out) backwards; animation-delay: calc(min(var(--g, 0), 8) * 40ms + .2s); }
 .ch-badge { animation: wiggle .9s ease-in-out .35s 2; }
 @keyframes wiggle { 25% { transform: rotate(-12deg) scale(1.1); } 75% { transform: rotate(10deg) scale(1.1); } }
+/* Saved boards, replay timer picker, home-screen guide */
+.save-row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: -4px; }
+.save-row .toggle { padding: 6px 12px; font-size: 14px; }
+.save-row .toggle svg { width: 18px; height: 18px; }
+.toggle.star { color: var(--faint); }
+.toggle.star[aria-pressed="true"] { color: var(--yellow-ink); background: var(--yellow-soft); border-color: var(--yellow); }
+.toggle.star[aria-pressed="true"] path { fill: var(--yellow); stroke: var(--yellow-edge); }
+.save-row .note { font-size: 14px; }
+.board.mini { width: 100%; padding: 5%; gap: 5%; border-width: 1.5px; border-bottom-width: 3px; border-radius: 12px; }
+.board.mini .tile { border-width: 1px; border-radius: 16%; box-shadow: 0 1.5px 0 var(--line-dark); }
+.rp-head { display: grid; grid-template-columns: 96px 1fr; gap: 14px; align-items: center; }
+.times { display: flex; flex-direction: column; gap: 10px; }
+.times .btn { flex: none; text-transform: none; }
+.times .btn.current { border-color: var(--blue-line); background: var(--blue-soft); color: var(--blue-edge); }
+.saved-list { display: flex; flex-direction: column; gap: 10px; }
+.saved-item { display: flex; gap: 8px; align-items: stretch; }
+.saved-open { flex: 1; min-width: 0; display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: center; text-align: left; padding: 8px; border: 2px solid var(--line); border-bottom-width: 4px; border-radius: 16px; background: #fff; }
+.saved-open:active { transform: translateY(2px); }
+.saved-meta { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.saved-meta b { font-family: var(--display); font-weight: 900; font-size: 17px; color: var(--ink); }
+.saved-meta span { font-size: 13px; color: var(--muted); font-weight: 800; }
+.saved-meta em { font-style: normal; color: var(--green-edge); }
+.saved-item .btn.icon { width: 48px; color: var(--faint); }
+.a2hs { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 2px solid var(--blue-line); border-bottom-width: 4px; border-radius: 18px; background: var(--blue-soft); color: var(--blue-edge); text-align: left; }
+.a2hs[hidden] { display: none; }
+.a2hs img { width: 44px; height: 44px; border-radius: 11px; flex: none; }
+.a2hs span { display: flex; flex-direction: column; gap: 2px; flex: 1; font-weight: 900; font-size: 16px; }
+.a2hs small { font-size: 13px; font-weight: 800; color: var(--muted); }
+.steps { margin: 0; padding: 0; list-style: none; counter-reset: step; display: flex; flex-direction: column; gap: 12px; }
+.steps[hidden] { display: none; }
+.steps li { counter-increment: step; display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; font-size: 16px; color: var(--ink); line-height: 1.4; }
+.steps li::before { content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: #fff; font-family: var(--display); font-weight: 900; font-size: 17px; }
+.steps small { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+.ico { display: inline-grid; place-items: center; vertical-align: -6px; width: 26px; height: 26px; margin: 0 2px; border-radius: 7px; background: var(--snow); border: 1.5px solid var(--line); color: var(--blue-edge); }
+.ico svg { width: 17px; height: 17px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 
@@ -424,6 +468,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
     <button class="btn share big" id="mChallengeBtn">Challenge friends<small>Play a board, then send it to a chat</small></button>
     <button class="btn daily big" id="dailyBtn">Daily board<small id="dailyInfo">Same 4×4 board for everyone today</small></button>
     <button class="btn" id="customBtn">Play specific letters</button>
+    <button class="btn" id="savedBtn" hidden>Saved boards</button>
+    <button class="a2hs" id="a2hsBtn" hidden><img src="apple-touch-icon.png" alt=""><span>Add Word Hunt to your Home Screen<small>Opens full screen, like an app</small></span></button>
   </div>
   <section class="settings" aria-label="Settings">
     <div class="set-row"><span class="label">Board</span>
@@ -483,6 +529,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
     </div>
     <div class="meter" aria-hidden="true"><i id="rMeter" style="width:0"></i></div>
     <p class="note" id="rNote"></p>
+    <div class="save-row"><button class="toggle star" id="saveBtn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 2.8l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><span>Save board</span></button></div>
     <div class="review">
       <div id="rBoard" class="board"></div>
       <div class="review-word"><strong id="rWord"></strong><span id="rWordInfo">Tap any word to see its path.</span></div>
@@ -525,6 +572,52 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
     <div class="sheet-actions">
       <button class="btn" id="shCopy">Copy link</button>
       <button class="btn primary" id="shSend">Share</button>
+    </div>
+  </div>
+</section>
+
+<section id="replay" class="sheet" hidden>
+  <div class="sheet-card" role="dialog" aria-labelledby="rpTitle">
+    <div class="rp-head"><div id="rpBoard" class="board mini"></div><div><h2 id="rpTitle">Replay this board</h2><p class="note">Same letters. Pick a timer.</p></div></div>
+    <div class="times" id="rpTimes"></div>
+    <div class="sheet-actions">
+      <button class="btn" id="rpCancel">Cancel</button>
+    </div>
+  </div>
+</section>
+
+<section id="saved" class="sheet" hidden>
+  <div class="sheet-card" role="dialog" aria-labelledby="svTitle">
+    <h2 id="svTitle">Saved boards</h2>
+    <p class="note">Kept on this device with your best score for each timer. Tap a board to play it.</p>
+    <div class="saved-list" id="savedList"></div>
+    <div class="sheet-actions">
+      <button class="btn" id="svClose">Close</button>
+    </div>
+  </div>
+</section>
+
+<section id="a2hs" class="sheet" hidden>
+  <div class="sheet-card" role="dialog" aria-labelledby="hsTitle">
+    <h2 id="hsTitle">Add to Home Screen</h2>
+    <p class="note">Word Hunt then opens from its own icon, full screen, without the browser bars.</p>
+    <div class="seg" id="hsSeg" role="group" aria-label="Browser">
+      <button data-b="safari" aria-pressed="true">Safari</button>
+      <button data-b="chrome" aria-pressed="false">Chrome</button>
+    </div>
+    <ol class="steps" id="hsSafari">
+      <li><span>Tap the <b>Share</b> button <i class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2"/></svg></i> in the toolbar.<small>On iOS 26, tap <i class="ico"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></i> at the bottom right first, then Share.</small></span></li>
+      <li><span>Scroll down and tap <b>Add to Home Screen</b> <i class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg></i>.<small>Don't see it? Tap <b>View More</b> at the bottom of the list.</small></span></li>
+      <li><span>Leave <b>Open as Web App</b> on, then tap <b>Add</b>.</span></li>
+    </ol>
+    <ol class="steps" id="hsChrome" hidden>
+      <li><span>Tap the <b>Share</b> button <i class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M8 7l4-4 4 4"/><path d="M8 10H6a1 1 0 0 0-1 1v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9a1 1 0 0 0-1-1h-2"/></svg></i> at the right end of the address bar.</span></li>
+      <li><span>Tap <b>Add to Home Screen</b> <i class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><path d="M12 8v8M8 12h8"/></svg></i>.<small>Don't see it? Scroll down or tap <b>View More</b>.</small></span></li>
+      <li><span>Tap <b>Add</b>.</span></li>
+    </ol>
+    <div class="sheet-actions">
+      <button class="btn" id="hsHide">Don't show again</button>
+      <button class="btn primary" id="hsDone">Got it</button>
     </div>
   </div>
 </section>
@@ -173580,7 +173673,9 @@ zyzzyvas</script>
     if (S.score > prevBest) store.set(key, S.score);
     renderControls();
     if (S.daily && S.started) { const dk = `wh-daily-${S.daily}`; if (S.score > (store.get(dk) ?? -1)) store.set(dk, S.score); }
-    showResults(prevBest);
+    const prevBoardBest = boardBest(boardKey(), S.mode);
+    recordBoardScore(boardKey(), S.mode, S.score);
+    showResults(prevBest, prevBoardBest);
     if (S.autoShare) $('shareBtn').click();
   }
 
@@ -173647,7 +173742,7 @@ zyzzyvas</script>
 
   // ---------- Results ----------
   let filter = 'all', rLine = null, selected = null;
-  function showResults(prevBest) {
+  function showResults(prevBest, prevBoardBest = boardBest(boardKey(), S.mode)) {
     const all = [...S.sol.keys()];
     const max = all.reduce((s, w) => s + points(w.length), 0);
     countUp($('rScore'), S.score);
@@ -173662,7 +173757,9 @@ zyzzyvas</script>
     const bestLine = S.score > prevBest && S.found.size ? `New best for ${modeName}.` : `Best for ${modeName}: ${Math.max(prevBest, S.score).toLocaleString()}.`;
     $('rNote').textContent = `You got ${Math.round(max ? S.score / max * 100 : 0)}% of the points. ` +
       (myLongest ? `Your longest: ${myLongest.toUpperCase()}. ` : '') +
-      `Longest on the board: ${longest.toUpperCase() || '—'}. ${bestLine}`;
+      `Longest on the board: ${longest.toUpperCase() || '—'}. ${bestLine}` +
+      (isSaved(boardKey()) ? (S.score > prevBoardBest && S.found.size ? ' New best on this saved board!' : ` Best on this board (${modeText(S.n, S.mode).split(' · ')[1]}): ${Math.max(prevBoardBest, S.score).toLocaleString()}.`) : '');
+    renderSaveBtn();
     $('resTitle').textContent = S.mode ? (S.started ? "Time's up" : 'Board revealed') : 'All words';
     const ch = S.challenge;
     $('rVs').hidden = !ch;
@@ -173721,7 +173818,83 @@ zyzzyvas</script>
     renderGroups();
   });
   $('nextBtn').addEventListener('click', () => newRound());
-  $('replayBtn').addEventListener('click', () => newRound(S.letters.slice(), S.code));
+  $('replayBtn').addEventListener('click', () => openReplay({ n: S.n, l: S.letters.join(''), c: S.code }, 'Replay this board'));
+
+  // ---------- Saved boards (localStorage) ----------
+  // wh-saved: [{ k, n, l, c, at, b: { 80, 120, 0 } }], newest first. b holds the best score per timer on that board.
+  // Unsaved boards keep their bests for this session only, so saving after a few replays keeps the best one.
+  const sessionBests = new Map();
+  const boardKey = (n = S.n, l = S.letters.join('')) => `${n}:${l}`;
+  const savedList = () => { const v = store.get('wh-saved'); return Array.isArray(v) ? v : []; };
+  const isSaved = k => savedList().some(x => x.k === k);
+  function boardBest(k, mode) {
+    const e = savedList().find(x => x.k === k);
+    return Math.max(e?.b?.[mode] || 0, sessionBests.get(k)?.[mode] || 0);
+  }
+  function recordBoardScore(k, mode, score) {
+    const sb = sessionBests.get(k) || {};
+    sb[mode] = Math.max(sb[mode] || 0, score); sessionBests.set(k, sb);
+    const list = savedList(), e = list.find(x => x.k === k);
+    if (e) { e.b = e.b || {}; e.b[mode] = Math.max(e.b[mode] || 0, score); store.set('wh-saved', list); }
+  }
+  function toggleSave() {
+    const k = boardKey(); let list = savedList();
+    if (list.some(x => x.k === k)) list = list.filter(x => x.k !== k);
+    else list.unshift({ k, n: S.n, l: S.letters.join(''), c: S.code, at: Date.now(), b: { ...sessionBests.get(k) } });
+    store.set('wh-saved', list);
+    renderSaveBtn(); haptic('light');
+  }
+  function renderSaveBtn() {
+    const on = isSaved(boardKey());
+    $('saveBtn').setAttribute('aria-pressed', on);
+    $('saveBtn').querySelector('span').textContent = on ? 'Saved' : 'Save board';
+  }
+  $('saveBtn').addEventListener('click', toggleSave);
+
+  const miniBoard = (el, l, n) => { el.style.setProperty('--n', n); el.innerHTML = [...l].map(ch => `<div class="tile"><span>${ch.toUpperCase()}</span></div>`).join(''); };
+  const timeName = t => t ? (t === 80 ? '80 s' : '2 min') : 'Zen ∞';
+
+  // Pick a timer for a fixed board (Replay from results, or a saved board from the menu)
+  function openReplay(b, title) {
+    miniBoard($('rpBoard'), b.l, b.n);
+    $('rpTitle').textContent = title;
+    const k = boardKey(b.n, b.l);
+    $('rpTimes').innerHTML = [80, 120, 0].map(t => {
+      const best = boardBest(k, t);
+      return `<button class="btn big${t === S.mode ? ' current' : ''}" data-t="${t}">${timeName(t)}<small>${best ? `Best on this board: ${best.toLocaleString()}` : 'Not played yet'}</small></button>`;
+    }).join('');
+    $('rpTimes').onclick = e => {
+      const btn = e.target.closest('button'); if (!btn) return;
+      audio();
+      document.querySelectorAll('.sheet').forEach(x => { x.hidden = true; });
+      S.n = b.n; S.mode = +btn.dataset.t;
+      newRound(b.l.split(''), b.c || null);
+    };
+    $('replay').hidden = false;
+  }
+  $('rpCancel').addEventListener('click', () => { $('replay').hidden = true; });
+
+  function renderSaved() {
+    const list = savedList();
+    $('savedBtn').hidden = !list.length;
+    $('savedBtn').textContent = `Saved boards (${list.length})`;
+    $('savedList').innerHTML = list.length ? list.map((e, i) => `<div class="saved-item">
+      <button class="saved-open" data-i="${i}"><div class="board mini" data-mini="${i}"></div>
+        <span class="saved-meta"><b>${e.n}×${e.n} · ${new Date(e.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</b>
+        <span>${[80, 120, 0].map(t => `${timeName(t)} <em>${e.b?.[t] ? e.b[t].toLocaleString() : '—'}</em>`).join(' · ')}</span></span></button>
+      <button class="btn icon" data-del="${i}" aria-label="Delete saved board"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+    </div>`).join('') : '<p class="note">No saved boards yet. Tap the star on the results screen to save one.</p>';
+    $('savedList').querySelectorAll('[data-mini]').forEach(el => { const e = list[+el.dataset.mini]; miniBoard(el, e.l, e.n); });
+  }
+  $('savedBtn').addEventListener('click', () => { renderSaved(); $('saved').hidden = false; });
+  $('svClose').addEventListener('click', () => { $('saved').hidden = true; });
+  $('savedList').addEventListener('click', e => {
+    const list = savedList();
+    const del = e.target.closest('[data-del]');
+    if (del) { store.set('wh-saved', list.filter((_, i) => i !== +del.dataset.del)); renderSaved(); return; }
+    const open = e.target.closest('[data-i]');
+    if (open) openReplay(list[+open.dataset.i], 'Play saved board');
+  });
 
   // ---------- Controls ----------
   function savePrefs() { store.set('wh-prefs', { n: S.prefN, mode: S.prefMode, sound: S.sound, vibe: S.vibe, name: S.name }); }
@@ -173753,7 +173926,22 @@ zyzzyvas</script>
     $('bestLine').innerHTML = `Your best on ${S.prefN}×${S.prefN} · ${S.prefMode ? (S.prefMode === 80 ? '80 s' : '2 min') : 'Zen'}: <b>${best.toLocaleString()}</b>`;
     const d = store.get(`wh-daily-${today()}`);
     $('dailyInfo').textContent = d != null ? `Today's best: ${d.toLocaleString()} · play again` : 'Same 4×4 board for everyone today';
+    renderSaved();
+    $('a2hsBtn').hidden = !showA2hs();
   }
+
+  // ---------- Add to Home Screen guide (iOS Safari / Chrome, hidden once installed or inside Telegram) ----------
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const showA2hs = () => isIOS && !standalone && !window.Telegram?.WebApp?.initData && !store.get('wh-a2hs-hidden');
+  function hsBrowser(b) {
+    $('hsSeg').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.b === b));
+    $('hsSafari').hidden = b !== 'safari'; $('hsChrome').hidden = b !== 'chrome';
+  }
+  $('a2hsBtn').addEventListener('click', () => { hsBrowser(/CriOS/.test(navigator.userAgent) ? 'chrome' : 'safari'); $('a2hs').hidden = false; });
+  $('hsSeg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) hsBrowser(b.dataset.b); });
+  $('hsDone').addEventListener('click', () => { $('a2hs').hidden = true; });
+  $('hsHide').addEventListener('click', () => { store.set('wh-a2hs-hidden', true); $('a2hs').hidden = true; renderMenu(); });
   function showGame() { $('menu').hidden = true; $('app').hidden = false; }
   function showMenu() {
     clearInterval(S.timer); stopCountdown();
@@ -173784,7 +173972,7 @@ zyzzyvas</script>
   }
   $('cGo').addEventListener('click', loadCustom);
   $('cInput').addEventListener('keydown', e => { if (e.key === 'Enter') loadCustom(); });
-  document.querySelectorAll('.sheet').forEach(s => s.addEventListener('click', e => { if (e.target === s && (s.id === 'custom' || s.id === 'share')) s.hidden = true; }));
+  document.querySelectorAll('.sheet').forEach(s => s.addEventListener('click', e => { if (e.target === s && s.id !== 'results' && s.id !== 'challenge') s.hidden = true; }));
 
   // ---------- Telegram Mini App hooks (no-ops outside Telegram) ----------
   try {
