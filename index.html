@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Word Hunt Unlimited</title>
 <meta name="theme-color" content="#ffffff">
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -39,8 +39,11 @@
   --ui: "Nunito", system-ui, sans-serif;
   color-scheme: light;
 }
-html, body { height: 100%; }
+/* The page itself never scrolls or zooms (it fights with swiping). Only the menu and sheet cards scroll. */
+html, body { height: 100%; overflow: hidden; overscroll-behavior: none; }
 body {
+  position: fixed; inset: 0;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
   margin: 0;
   background: var(--bg);
   color: var(--ink);
@@ -51,6 +54,9 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 button { font: inherit; color: inherit; cursor: pointer; }
+input, .err.ok { -webkit-user-select: text; user-select: text; }
+#app { touch-action: none; }
+#menu, .sheet-card { touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
 button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line); outline-offset: 2px; }
 
 /* Background decoration: soft pastel shapes and sparkles around the edges */
@@ -115,7 +121,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 @keyframes shake { 25% { transform: translateX(-6px) } 75% { transform: translateX(6px) } }
 @keyframes pop { from { transform: scale(.4); opacity: 0; } 70% { transform: scale(1.15); } }
 
-.board-wrap { flex: 0 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
+.board-wrap { position: relative; flex: 0 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center; }
 .board {
   --n: 4;
   position: relative;
@@ -149,7 +155,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
   font-weight: 900;
   font-size: calc(50cqw / var(--n));
   line-height: 1;
-  transition: transform .08s ease, background-color .08s, border-color .08s, box-shadow .08s, color .08s;
+  transition: transform .08s ease, background-color .08s, border-color .08s, box-shadow .08s, color .08s, opacity .4s;
 }
 .tile span { transform: translateY(-0.03em); }
 /* While dragging: blue = path so far, green = valid new word, yellow = already found. Never red mid-swipe. */
@@ -174,6 +180,8 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
   transition: transform .06s;
 }
 .btn:active { transform: translateY(2px); border-bottom-width: 2px; margin-bottom: 2px; }
+.btn[hidden] { display: none !important; }
+.btn:disabled { opacity: .5; pointer-events: none; }
 .btn.primary { background: var(--green); color: #fff; border-color: var(--green-edge); }
 .foot { margin: 0; text-align: center; font-size: 13px; color: var(--faint); display: flex; gap: 6px 14px; justify-content: center; flex-wrap: wrap; align-items: center; font-weight: 800; }
 .foot code { font-family: ui-monospace, Menlo, monospace; color: var(--ink); font-size: 12px; letter-spacing: .04em; }
@@ -210,9 +218,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
   padding-left: max(18px, env(safe-area-inset-left, 0px));
   padding-right: max(18px, env(safe-area-inset-right, 0px));
   display: flex; flex-direction: column; gap: 16px;
-  animation: rise .22s ease;
 }
-@keyframes rise { from { transform: translateY(24px) } }
 .sheet h2 { margin: 0; font-family: var(--display); font-weight: 900; font-size: 28px; color: var(--ink); text-wrap: balance; }
 #results h2 { color: var(--orange); text-align: center; }
 
@@ -281,7 +287,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 #menu[hidden], #app[hidden] { display: none; }
 .menu {
   position: relative; z-index: 1;
-  box-sizing: border-box; min-height: 100%; max-width: 440px; margin: 0 auto;
+  box-sizing: border-box; height: 100%; overflow-y: auto; max-width: 440px; margin: 0 auto;
   display: flex; flex-direction: column; justify-content: safe center; gap: 18px;
   padding-top: max(24px, env(safe-area-inset-top, 0px));
   padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
@@ -315,7 +321,6 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 
 /* Challenges */
 .tile.blank { background: var(--snow); border-style: dashed; box-shadow: none; color: var(--line-dark); }
-.wordbar.count .pill { min-width: 1.4em; text-align: center; background: var(--orange); border-color: #e08600; color: #fff; animation: pop .35s ease; }
 .sheet-actions { flex-wrap: wrap; }
 .btn.share { flex-basis: 100%; background: var(--blue); border-color: var(--blue-edge); color: #fff; }
 .sheet-card.center { align-items: center; text-align: center; }
@@ -339,6 +344,71 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 .vs.tie b { color: var(--blue-edge); }
 
 @media (max-height: 700px) { .big { font-size: 38px; } #count { font-size: 28px; } .wordbar { height: 48px; font-size: 28px; } .btn { padding: 9px; } }
+
+/* ---------- Motion ---------- */
+:root { --spring: cubic-bezier(.34, 1.56, .64, 1); --out: cubic-bezier(.22, 1, .36, 1); }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } }
+@keyframes fadeIn { from { opacity: 0; } }
+#menu:not([hidden]), #app:not([hidden]) { animation: fadeIn .3s ease backwards; }
+
+/* Menu: logo tiles drop in one by one, then the buttons and settings rise */
+.logo-row span { --i: 0; }
+.logo-row span:nth-child(2) { --i: 1; } .logo-row span:nth-child(3) { --i: 2; } .logo-row span:nth-child(4) { --i: 3; }
+.logo-row.g span { --r: 4; }
+#menu:not([hidden]) .logo-row span { animation: drop .5s var(--spring) backwards; animation-delay: calc((var(--i) + var(--r, 0)) * 45ms + 50ms); }
+@keyframes drop { from { opacity: 0; transform: translateY(-26px) scale(.6); } }
+#menu:not([hidden]) .tagline, #menu:not([hidden]) .menu-actions > *, #menu:not([hidden]) .settings { animation: fadeUp .45s var(--out) backwards; }
+#menu:not([hidden]) .tagline { animation-delay: .35s; }
+#menu:not([hidden]) .menu-actions > :nth-child(1) { animation-delay: .4s; }
+#menu:not([hidden]) .menu-actions > :nth-child(2) { animation-delay: .45s; }
+#menu:not([hidden]) .menu-actions > :nth-child(3) { animation-delay: .5s; }
+#menu:not([hidden]) .menu-actions > :nth-child(4) { animation-delay: .55s; }
+#menu:not([hidden]) .settings { animation-delay: .6s; }
+
+/* Game controls ease in when they appear */
+.controls .btn:not([hidden]) { animation: fadeUp .3s var(--out) backwards; }
+.seg button, .toggle, .chip { transition: background-color .18s, border-color .18s, color .18s, transform .08s; }
+.chip:active { transform: translateY(1px); }
+
+/* Face-down board with a 3-2-1 countdown, then tiles flip over in a diagonal wave */
+.board.covered .tile { background: var(--blue-soft); border-color: var(--blue-line); box-shadow: 0 0.12em 0 var(--blue-line); color: transparent; animation: breathe 1s ease-in-out infinite; animation-delay: calc(var(--d) * 70ms); }
+@keyframes breathe { 50% { transform: scale(.93); } }
+.board.revealing { perspective: 700px; }
+.board.revealing .tile { animation: flip .5s var(--spring) backwards; animation-delay: calc(var(--d) * 45ms); }
+@keyframes flip { from { transform: rotateY(90deg) scale(.85); background: var(--blue-soft); color: transparent; } }
+.countdown { position: absolute; inset: 0; z-index: 5; display: grid; place-items: center; pointer-events: none; }
+.countdown[hidden] { display: none; }
+.countdown b {
+  font-family: var(--display); font-weight: 900; font-size: clamp(80px, 32vw, 150px); line-height: 1;
+  color: var(--orange); -webkit-text-stroke: 4px #fff; paint-order: stroke fill; text-shadow: 0 6px 0 #e08600;
+  animation: count 1s var(--out) both;
+}
+.countdown b.go { color: var(--green); text-shadow: 0 6px 0 var(--green-edge); font-size: clamp(60px, 22vw, 110px); animation: go .7s var(--out) both; }
+@keyframes count { 0% { opacity: 0; transform: scale(.3); } 25% { opacity: 1; transform: scale(1.08); } 40% { transform: scale(1); } 80% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.3); } }
+@keyframes go { 0% { opacity: 0; transform: scale(.4) rotate(-8deg); } 30% { opacity: 1; transform: scale(1.1) rotate(0); } 70% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.5); } }
+
+/* Found a word: its tiles pulse green along the path; the score bumps */
+.tile.hit { animation: hit .45s var(--spring) backwards; animation-delay: calc(var(--k, 0) * 35ms); }
+@keyframes hit { 45% { transform: scale(1.12); background: var(--green); border-color: var(--green-edge); box-shadow: 0 0.06em 0 var(--green-edge); color: #fff; } }
+.bump { animation: bump .35s var(--spring); }
+@keyframes bump { 40% { transform: scale(1.18); } }
+#timer.low { animation: tick 1s ease-in-out infinite; }
+@keyframes tick { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.12); } }
+.wordbar .hint { animation: fadeIn .3s ease; }
+.wordbar.good .pill { animation: pop .25s var(--spring); }
+
+/* Results: sheet slides up, stats pop in, meter fills, word groups rise */
+.sheet-card { animation: rise .42s var(--out); }
+@keyframes rise { from { transform: translateY(60%); opacity: .4; } }
+#results:not([hidden]) h2 { animation: pop .45s var(--spring) .1s backwards; }
+#results:not([hidden]) .summary div { animation: fadeUp .4s var(--spring) backwards; }
+#results:not([hidden]) .summary div:nth-child(1) { animation-delay: .15s; }
+#results:not([hidden]) .summary div:nth-child(2) { animation-delay: .21s; }
+#results:not([hidden]) .summary div:nth-child(3) { animation-delay: .27s; }
+.meter i { transition: width .9s var(--out) .3s; }
+.group { animation: fadeUp .4s var(--out) backwards; animation-delay: calc(min(var(--g, 0), 8) * 40ms + .2s); }
+.ch-badge { animation: wiggle .9s ease-in-out .35s 2; }
+@keyframes wiggle { 25% { transform: rotate(-12deg) scale(1.1); } 75% { transform: rotate(10deg) scale(1.1); } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 </style>
 
@@ -389,6 +459,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid var(--blue-line);
 
   <div class="board-wrap">
     <div id="board" class="board" role="application" aria-label="Letter board"></div>
+    <div class="countdown" id="countdown" aria-live="assertive" hidden></div>
   </div>
 
   <div class="controls">
@@ -173277,7 +173348,7 @@ zyzzyvas</script>
     prefMode: [80, 120, 0].includes(prefs.mode) ? prefs.mode : 80,
     daily: null, autoShare: false,
     sound: prefs.sound !== false, vibe: prefs.vibe !== false, name: typeof prefs.name === 'string' ? prefs.name : '',
-    code: null, challenge: null, covered: false,
+    code: null, challenge: null, covered: false, counting: false,
     letters: [], sol: new Map(), found: new Map(), score: 0,
     started: false, over: false, endAt: 0, startAt: 0, timer: null
   };
@@ -173326,6 +173397,32 @@ zyzzyvas</script>
     bad() { const a = audio(); if (a) tone(a, 220, a.currentTime + 0.01, 0.08, 0.07, 'square'); }
   };
 
+  // ---------- No page scroll or zoom (only the menu and sheet cards scroll) ----------
+  document.addEventListener('touchmove', e => {
+    if (e.touches.length > 1 || !e.target.closest?.('#menu, .sheet-card')) e.preventDefault();
+  }, { passive: false });
+  ['gesturestart', 'gesturechange', 'gestureend'].forEach(t => document.addEventListener(t, e => e.preventDefault()));
+
+  // ---------- Motion helpers ----------
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  function replay(el, cls) { el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+  function countUp(el, to) {
+    if (reducedMotion.matches || !to) { el.textContent = to.toLocaleString(); return; }
+    const t0 = performance.now();
+    const f = now => { const p = Math.min(1, (now - t0) / 700); el.textContent = Math.round(to * (1 - (1 - p) ** 3)).toLocaleString(); if (p < 1) requestAnimationFrame(f); };
+    requestAnimationFrame(f);
+  }
+  // Pulse the tiles of a found word green, one after another along its path
+  function celebrate(p) {
+    const tiles = boardEl.querySelectorAll('.tile');
+    p.forEach((i, k) => {
+      const t = tiles[i]; if (!t) return;
+      t.style.setProperty('--k', k);
+      t.onanimationend = e => { if (e.animationName === 'hit') t.classList.remove('hit'); };
+      replay(t, 'hit');
+    });
+  }
+
   // ---------- Rendering ----------
   function buildBoard(el, letters, n) {
     el.style.setProperty('--n', n);
@@ -173334,6 +173431,7 @@ zyzzyvas</script>
       const t = document.createElement('div');
       t.className = 'tile' + (ch === 'q' ? ' q' : '') + (ch ? '' : ' blank');
       t.dataset.i = i;
+      t.style.setProperty('--d', ((i / n) | 0) + i % n); // diagonal index for the reveal wave
       t.innerHTML = `<span>${ch ? ch.toUpperCase() : '?'}</span>`;
       el.appendChild(t);
     });
@@ -173366,8 +173464,18 @@ zyzzyvas</script>
     $('score').textContent = S.score.toLocaleString();
     $('count').innerHTML = `${S.found.size}<small>/${S.sol.size}</small>`;
     $('code').textContent = S.letters.join('').toUpperCase().match(new RegExp(`.{${S.n}}`, 'g')).join('-');
-    $('endBtn').textContent = S.mode ? 'End round' : 'Show words';
     renderTimer();
+  }
+
+  // A new game can only start once the current one has ended: mid-round the only control is End round.
+  function renderControls() {
+    const playing = !S.over;
+    $('menuBtn').hidden = playing;
+    $('newBtn').hidden = playing || S.covered;
+    $('endBtn').hidden = S.covered;
+    $('endBtn').disabled = S.counting;
+    $('endBtn').textContent = playing ? (S.mode ? 'End round' : 'Show words') : 'Results';
+    try { playing ? tgApp?.BackButton?.hide() : tgApp?.BackButton?.show(); } catch {}
   }
 
   function renderTimer() {
@@ -173406,7 +173514,7 @@ zyzzyvas</script>
   // ---------- Round flow ----------
   // letters: fixed board (custom/replay); code: seeded board; challenge: { by, s, w } to compare against at the end
   function newRound(letters, code, challenge) {
-    clearInterval(S.timer); cdToken++;
+    clearInterval(S.timer); stopCountdown();
     if (letters) { S.letters = letters; S.sol = solve(letters, S.n); S.code = code || null; }
     else { S.code = code || randomCode(); const g = goodBoard(S.n, S.code); S.letters = g.letters; S.sol = g.sol; }
     S.challenge = challenge || null; S.covered = false; S.daily = null; S.autoShare = false;
@@ -173414,15 +173522,42 @@ zyzzyvas</script>
     S.found = new Map(); S.score = 0; S.started = false; S.over = false;
     path = []; typed = '';
     ({ svg, line } = buildBoard(boardEl, S.letters, S.n));
-    boardEl.classList.remove('over', 'good', 'dup');
+    boardEl.classList.remove('over', 'good', 'dup', 'revealing');
     $('results').hidden = true;
-    setWordbar('');
+    setWordbar('', '', 'Get ready…');
     renderHud();
     requestAnimationFrame(measure);
+    countdown();
+  }
+
+  // Board stays face-down for 3 seconds, then flips over and the clock starts
+  function stopCountdown() { cdToken++; S.counting = false; $('countdown').hidden = true; }
+  function countdown() {
+    const my = ++cdToken, cd = $('countdown');
+    S.counting = true; boardEl.classList.add('covered'); cd.hidden = false;
+    renderControls();
+    let k = 3;
+    const tick = () => {
+      if (my !== cdToken) return; // cancelled (e.g. back to menu)
+      if (k > 0) {
+        cd.innerHTML = `<b>${k}</b>`; sfx.tick(false); haptic('light'); k--;
+        setTimeout(tick, 1000);
+        return;
+      }
+      S.counting = false;
+      cd.innerHTML = '<b class="go">GO!</b>';
+      boardEl.classList.remove('covered'); boardEl.classList.add('revealing');
+      setTimeout(() => { if (my === cdToken) cd.hidden = true; }, 700);
+      setTimeout(() => boardEl.classList.remove('revealing'), 1300);
+      sfx.tick(true); haptic('success');
+      start();
+      renderControls();
+    };
+    tick();
   }
 
   function start() {
-    if (S.started || S.over) return;
+    if (S.started || S.over || S.counting) return;
     S.started = true; S.startAt = Date.now(); S.endAt = S.startAt + S.mode * 1000;
     S.timer = setInterval(() => { renderTimer(); if (S.mode && Date.now() >= S.endAt) endRound(); }, 200);
     setWordbar('');
@@ -173434,7 +173569,7 @@ zyzzyvas</script>
       S.found.set(word, points(word.length));
       S.score += points(word.length);
       haptic('success'); sfx.good(word.length);
-      renderHud();
+      renderHud(); replay($('score'), 'bump'); replay($('count'), 'bump');
       setWordbar(word, 'good');
     } else if (S.found.has(word)) {
       haptic('warning'); sfx.dup();
@@ -173444,6 +173579,7 @@ zyzzyvas</script>
       setWordbar(word, 'flash-bad');
     }
     setTimeout(() => { if (!path.length && !typed) setWordbar(''); }, 650);
+    return wordbar.classList.contains('good');
   }
 
   function endRound() {
@@ -173454,6 +173590,7 @@ zyzzyvas</script>
     const key = `wh-best-${S.n}-${S.mode}`;
     const prevBest = store.get(key) || 0;
     if (S.score > prevBest) store.set(key, S.score);
+    renderControls();
     if (S.daily && S.started) { const dk = `wh-daily-${S.daily}`; if (S.score > (store.get(dk) ?? -1)) store.set(dk, S.score); }
     showResults(prevBest);
     if (S.autoShare) $('shareBtn').click();
@@ -173472,7 +173609,7 @@ zyzzyvas</script>
   }
 
   boardEl.addEventListener('pointerdown', e => {
-    if (S.over) return;
+    if (S.over || S.counting) return;
     audio(); // iOS only allows audio to start inside a touch
     measure();
     const i = hit(e, true);
@@ -173495,11 +173632,11 @@ zyzzyvas</script>
   });
   const finish = () => {
     if (!path.length) return;
-    const w = wordOf(path); path = [];
+    const p = path, w = wordOf(p); path = [];
     boardEl.classList.remove('good', 'dup');
     boardEl.querySelectorAll('.tile.on').forEach(t => t.classList.remove('on'));
     line.setAttribute('points', '');
-    if (!S.over) submit(w);
+    if (!S.over && submit(w)) celebrate(p);
   };
   boardEl.addEventListener('pointerup', finish);
   boardEl.addEventListener('pointercancel', finish);
@@ -173507,10 +173644,10 @@ zyzzyvas</script>
 
   // ---------- Keyboard input (desktop) ----------
   addEventListener('keydown', e => {
-    if (S.over || document.querySelector('.sheet:not([hidden])') || e.target.matches?.('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (S.over || S.counting || document.querySelector('.sheet:not([hidden])') || e.target.matches?.('input, textarea') || e.metaKey || e.ctrlKey || e.altKey) return;
     if (/^[a-z]$/i.test(e.key)) { audio(); start(); typed += e.key.toLowerCase(); }
     else if (e.key === 'Backspace') typed = typed.slice(0, -1);
-    else if (e.key === 'Enter' && typed) { const w = typed; typed = ''; path = []; update(); submit(w); return; }
+    else if (e.key === 'Enter' && typed) { const w = typed, p = path; typed = ''; path = []; update(); if (submit(w)) celebrate(p); return; }
     else if (e.key === 'Escape') typed = '';
     else return;
     e.preventDefault();
@@ -173525,10 +173662,12 @@ zyzzyvas</script>
   function showResults(prevBest) {
     const all = [...S.sol.keys()];
     const max = all.reduce((s, w) => s + points(w.length), 0);
-    $('rScore').textContent = S.score.toLocaleString();
+    countUp($('rScore'), S.score);
     $('rMax').textContent = max.toLocaleString();
     $('rWords').innerHTML = `${S.found.size}<small> / ${all.length}</small>`;
-    $('rMeter').style.width = (max ? Math.min(100, S.score / max * 100) : 0) + '%';
+    $('rMeter').style.width = '0';
+    const pct = (max ? Math.min(100, S.score / max * 100) : 0) + '%';
+    requestAnimationFrame(() => requestAnimationFrame(() => { $('rMeter').style.width = pct; }));
     const longest = all.reduce((a, w) => w.length > a.length ? w : a, '');
     const myLongest = [...S.found.keys()].reduce((a, w) => w.length > a.length ? w : a, '');
     const modeName = S.mode ? `${S.n}×${S.n} · ${S.mode === 80 ? '80 s' : '2 min'}` : `${S.n}×${S.n} · Zen`;
@@ -173565,9 +173704,9 @@ zyzzyvas</script>
     words.forEach(w => { if (!byLen.has(w.length)) byLen.set(w.length, []); byLen.get(w.length).push(w); });
     const lens = [...byLen.keys()].sort((a, b) => b - a);
     // Within each length: found words first, then missed, each alphabetical
-    $('groups').innerHTML = lens.length ? lens.map(L => {
+    $('groups').innerHTML = lens.length ? lens.map((L, g) => {
       const ws = byLen.get(L).sort((a, b) => S.found.has(b) - S.found.has(a) || a.localeCompare(b));
-      return `<section class="group"><h3><span class="len">${L} letters</span><span class="meta">${points(L).toLocaleString()} pts each · <b>${got.get(L) || 0}/${total.get(L)}</b> found</span></h3>
+      return `<section class="group" style="--g:${g}"><h3><span class="len">${L} letters</span><span class="meta">${points(L).toLocaleString()} pts each · <b>${got.get(L) || 0}/${total.get(L)}</b> found</span></h3>
       <div class="chips" style="--len:${Math.min(L, 10)}">${ws.map(w => `<button class="chip${S.found.has(w) ? ' found' : ''}" data-w="${w}" aria-pressed="${w === selected}">${w}</button>`).join('')}</div></section>`;
     }).join('')
       : `<p class="note">${filter === 'missed' ? 'You found every word on this board.' : 'No words found this round.'}</p>`;
@@ -173616,7 +173755,7 @@ zyzzyvas</script>
     S.prefN = +b.dataset.size; syncSegs(); savePrefs();
   });
   $('newBtn').addEventListener('click', () => newRound());
-  $('endBtn').addEventListener('click', () => { if (S.covered) return; if (S.over) showResults(store.get(`wh-best-${S.n}-${S.mode}`) || 0); else endRound(); });
+  $('endBtn').addEventListener('click', () => { if (S.covered || S.counting) return; if (S.over) showResults(store.get(`wh-best-${S.n}-${S.mode}`) || 0); else endRound(); });
 
   // ---------- Menu ----------
   const tgApp = window.Telegram?.WebApp || null;
@@ -173627,12 +173766,9 @@ zyzzyvas</script>
     const d = store.get(`wh-daily-${today()}`);
     $('dailyInfo').textContent = d != null ? `Today's best: ${d.toLocaleString()} · play again` : 'Same 4×4 board for everyone today';
   }
-  function showGame() {
-    $('menu').hidden = true; $('app').hidden = false;
-    try { tgApp?.BackButton?.show(); } catch {}
-  }
+  function showGame() { $('menu').hidden = true; $('app').hidden = false; }
   function showMenu() {
-    clearInterval(S.timer); cdToken++;
+    clearInterval(S.timer); stopCountdown();
     S.over = true; S.covered = false; path = []; typed = '';
     document.querySelectorAll('.sheet').forEach(x => { x.hidden = true; });
     $('app').hidden = true; $('menu').hidden = false;
@@ -173645,7 +173781,7 @@ zyzzyvas</script>
   $('dailyBtn').addEventListener('click', () => { audio(); S.n = 4; S.mode = 80; const d = today(); newRound(null, 'D' + d); S.daily = d; setWordbar('', '', 'Daily board · swipe to start'); });
   $('menuBtn').addEventListener('click', showMenu);
   $('rMenuBtn').addEventListener('click', showMenu);
-  try { tgApp?.BackButton?.onClick(showMenu); } catch {}
+  try { tgApp?.BackButton?.onClick(() => { if (S.over) showMenu(); }); } catch {}
 
   // Custom board
   $('customBtn').addEventListener('click', () => { $('cErr').textContent = ''; $('cInput').value = ''; $('cInput').placeholder = `${S.n * S.n} letters, row by row`; $('custom').hidden = false; setTimeout(() => $('cInput').focus(), 50); });
@@ -173689,7 +173825,7 @@ zyzzyvas</script>
 
   // Show a face-down board until the player presses Start
   function cover(ch) {
-    clearInterval(S.timer); cdToken++;
+    clearInterval(S.timer); stopCountdown();
     S.n = ch.n; S.mode = ch.t; showGame();
     S.letters = Array(S.n * S.n).fill(''); S.sol = new Map(); S.found = new Map(); S.score = 0;
     S.started = false; S.over = true; S.covered = true; path = []; typed = '';
@@ -173698,6 +173834,7 @@ zyzzyvas</script>
     $('results').hidden = true;
     $('score').textContent = '0'; $('count').innerHTML = '0<small>/?</small>'; $('code').textContent = 'hidden';
     renderTimer();
+    renderControls();
     setWordbar('', '', 'Board hidden until you start');
   }
 
@@ -173711,20 +173848,7 @@ zyzzyvas</script>
     $('chGo').onclick = () => {
       $('challenge').hidden = true;
       audio(); // unlock sound inside the tap
-      const my = ++cdToken;
-      let k = 3;
-      const tick = () => {
-        if (my !== cdToken) return; // cancelled (e.g. New board pressed)
-        if (k === 0) {
-          newRound(ch.l ? ch.l.split('') : null, ch.c, ch);
-          start(); sfx.tick(true); haptic('success');
-          return;
-        }
-        wordbar.className = 'wordbar count'; wordbar.innerHTML = `<span class="pill">${k}</span>`;
-        sfx.tick(false); haptic('light'); k--;
-        setTimeout(tick, 700);
-      };
-      tick();
+      newRound(ch.l ? ch.l.split('') : null, ch.c, ch); // face-down board + 3-2-1, same as every round
     };
   }
   $('chSkip').addEventListener('click', showMenu);

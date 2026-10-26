@@ -1,6 +1,6 @@
 # Word Hunt — Handoff
 
-_Last updated: Friday, October 23, 2026_
+_Last updated: Monday, October 26, 2026_
 
 An endless, GamePigeon-style Word Hunt that runs in any browser and is meant to become a Telegram Mini App.
 
@@ -14,6 +14,8 @@ An endless, GamePigeon-style Word Hunt that runs in any browser and is meant to 
 - **Challenge links (Oct 23).** Every board has a short code that produces the same letters on every device. After a round, "Challenge a friend" shares a link with the board, timer and your score. Whoever opens it sees a face-down board, presses Start, gets a 3-2-1 countdown, then a You-vs-them result and can send their score back. Works in groups (everyone gets the same board). No server: scores travel inside the link, so they're on the honour system.
 
 - **Main menu (Oct 23).** Opens to a menu: Play, Challenge friends (play, then the share box opens), Daily board (same 4×4 · 80 s board for everyone each day, by local date), Play specific letters, plus settings (board size, time, sound, vibration) and your best score. The game screen has a home button; inside Telegram the top-left Back button also returns to the menu.
+
+- **Game feel (Oct 26).** The page no longer scrolls or zooms (only the menu and pop-up sheets scroll), so swipes don't get hijacked. Every round starts face-down with a 3-2-1 countdown, then the tiles flip over and the clock starts. Mid-round the only button is End round; Home and New board appear once the round is over. Added animations: menu entrance, tile flip, green pulse along found words, score bump, timer pulse in the last 10 s, results sheet slide-up with count-up and meter fill.
 
 ## Left to do
 
